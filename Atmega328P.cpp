@@ -246,15 +246,19 @@ void Atmega328P::UARTREADBytes(uint8_t *bytes, uint8_t amountOfBytes)
     // binToLed((uint8_t) 0xff);
 }
 
-void Atmega328P::println(uint8_t *bytes)
+void Atmega328P::print(uint8_t *bytes)
 {
   int index = 0;
   while (bytes[index] != '\0')
   {
     index++;
   }
-  binToLed(index);
   UARTSendBytes(bytes, index + 1 );
+}
+
+void Atmega328P::println(uint8_t *bytes)
+{
+  print(bytes);
   UARTSend((uint8_t) 0x0A);
   UARTSend((uint8_t) 0x0D);
 }

@@ -29,7 +29,7 @@ class Atmega328P : public Microcontroller
        uint8_t UARTRead();
        void    UARTREADBytes(uint8_t *bytes, uint8_t amountOfBytes);
        void    println(uint8_t *bytes);
-       // void    print(uint8_t *bytes);
+       void    print(uint8_t *bytes);
        void    setDPM(uint8_t pin, uint8_t value);// set pin mode value = 0 or 1 for the digital pins
        void    setAPM(uint8_t pin, uint8_t value);// set pin mode value = 0 or 1 for the analog pins
        void    DW(uint8_t pin, uint8_t value);//digital write(dw) value = 0 or 1
