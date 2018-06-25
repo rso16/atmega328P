@@ -95,14 +95,13 @@ void Atmega328P::AW(uint8_t pin, uint8_t value)
 uint16_t Atmega328P::AR(uint8_t pin)
 {
   ADMUX &= 0xf0;
-  ADMUX = pin;
+  ADMUX |= pin;
   ADMUX |= (1<<REFS0);
   ADCSRA = (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);
   ADCSRA |= (1<<ADEN);
   ADCSRA |= (1<<ADSC);
   while (ADCSRA & (1<<ADSC));
-  uint16_t result = ADC;
-  return result;
+  return ADC;
 }
 
 void Atmega328P::toggleDP(uint8_t pin)
@@ -179,13 +178,13 @@ void Atmega328P::sendI2CData(uint8_t data)
 
 void Atmega328P::UARTInit(uint8_t dataBits, uint8_t parityBit, uint8_t stopBits, uint32_t baud, uint8_t speed, uint8_t RT)
 {
-  uint16_t ubrr = (clockspeed / ((speed + 1) * 8 * baud)) - 1;
+  uint16_t ubrr = (clockspeed / ((speed + 1) * 16 * baud)) - 1;
   // binToLed(ubrr);
-  UCSR0A |= (1 << U2X0);
+  UCSR0A &= ~(1 << U2X0);
   UBRR0H = (unsigned char)(ubrr>>8);
   UBRR0L = (unsigned char)ubrr;
   // Enable receiver and transmitter
-  UCSR0B = (1<<RXEN0)|(1<<TXEN0);
+  UCSR0B = (1<<RXEN0)|(1<<TXEN0)|(1<<UCSZ02);
   /* Set frame format: 8data, 1 stop bit */
   UCSR0C = (3<<UCSZ00);
 }
@@ -222,10 +221,13 @@ void Atmega328P::UARTSendBytes(uint8_t bytes[], uint8_t amountOfBytes)
 }
 uint8_t Atmega328P::UARTRead()
 {
-  /* Wait for data to be received */
-  while ( !(UCSR0A & (1<<RXC0)) );
-  /* Get and return received data from buffer */
-  return UDR0;
+  int counter = 0;
+  while ((!(UCSR0A & _BV(RXC0))) && counter < 75)
+  {
+    _delay_ms(1);
+    counter++;
+  }
+  return (uint8_t) UDR0;
 }
 
 void Atmega328P::UARTREADBytes(uint8_t *bytes, uint8_t amountOfBytes)
@@ -235,6 +237,7 @@ void Atmega328P::UARTREADBytes(uint8_t *bytes, uint8_t amountOfBytes)
   temp = bytes + (sizeof(uint8_t));
     while(index <= amountOfBytes)
     {
+      // UARTSend((uint8_t) (0x30 + index));
       temp = bytes + (sizeof(uint8_t) * index);
       *temp =  UARTRead();
       // binToLed(*temp);
@@ -251,7 +254,8 @@ void Atmega328P::println(uint8_t *bytes)
     index++;
   }
   binToLed(index);
-  UARTSendBytes(bytes, index);
+  UARTSendBytes(bytes, index + 1 );
+  UARTSend((uint8_t) 0x0A);
   UARTSend((uint8_t) 0x0D);
 }
 
