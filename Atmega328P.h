@@ -21,7 +21,7 @@ class Atmega328P : public Microcontroller
     private:
 
     public:
-       void    UARTInit(uint8_t dataBits, uint8_t parityBit, uint8_t stopBits, uint32_t baud, uint8_t speed, uint8_t RT); //fuction to initialize the UART, takes the amount of data bits (5,6,6,8 or 9 bits), no, even or an odd parity bit, the amound of stop bits (1 or 2) and the baudrate returns the status code
+       void    UARTInit(uint8_t dataBits, uint8_t parityBit, uint8_t stopBits, float baud, uint8_t speed, uint8_t RT); //fuction to initialize the UART, takes the amount of data bits (5,6,6,8 or 9 bits), no, even or an odd parity bit, the amound of stop bits (1 or 2), baudrate and whether or not receive and transmit should be enabled
        void    UARTBegin(long int baud); //function to begin the UART with the defaul settings and a baudrate. returns an status code.
        void    UARTSend(uint16_t data);
        void    UARTSend(uint8_t data);
@@ -42,9 +42,11 @@ class Atmega328P : public Microcontroller
 
        uint8_t getBit(uint8_t data, uint8_t index);//gets the bit for the data (a byte) at the index
        void    sendI2CStart();
+       void    sendI2CReStart();
        void    sendI2CStop();
        void    sendI2CAddr(uint8_t addr);
        void    sendI2CData(uint8_t data);
+       uint8_t readI2CData();
 
        void    EEPROM_Write(uint32_t addr, uint8_t data);
        void    EEPROM_WriteBytes(uint32_t addr, uint8_t data[], uint32_t amountOfBytes);
