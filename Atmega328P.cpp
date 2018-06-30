@@ -155,9 +155,19 @@ void Atmega328P::sendI2CStart()
   if(DEBUG){Serial.println(TWSR,HEX);};
 }
 
+void Atmega328P::sendI2CReStart()
+{
+  TWCR = (1<<TWSTA)|(1<<TWINT);
+  TWCR&=~(1<<TWSTO);
+  // while (!(TWCR &(1<<TWINT)));
+  if(DEBUG){Serial.println(TWSR,HEX);};
+}
+
 void Atmega328P::sendI2CStop()
 {
   TWCR = (1<<TWINT) |(1<<TWSTA);
+  _delay_ms(10);
+  // if(DEBUG){Serial.println(TWSR,HEX);};
 }
 
 void Atmega328P::sendI2CAddr(uint8_t addr)
@@ -176,9 +186,16 @@ void Atmega328P::sendI2CData(uint8_t data)
   if(DEBUG){Serial.println(TWSR,HEX);};
 }
 
-void Atmega328P::UARTInit(uint8_t dataBits, uint8_t parityBit, uint8_t stopBits, uint32_t baud, uint8_t speed, uint8_t RT)
+uint8_t Atmega328P::readI2CData()
 {
-  uint16_t ubrr = (clockspeed / ((speed + 1) * 16 * baud)) - 1;
+  while (!(TWCR &  (1<<TWINT)));
+  uint8_t data = TWDR;
+  return data;
+}
+
+void Atmega328P::UARTInit(uint8_t dataBits, uint8_t parityBit, uint8_t stopBits, float baud, uint8_t speed, uint8_t RT)
+{
+  uint16_t ubrr = round(((clockspeed / ((speed + 1) * 8 * baud)) - 1));
   // binToLed(ubrr);
   UCSR0A &= ~(1 << U2X0);
   UBRR0H = (unsigned char)(ubrr>>8);
